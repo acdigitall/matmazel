@@ -1,0 +1,131 @@
+/*
+ * Tailwind kaynak dosyası. Derlenmiş çıktı: assets/css/style.css
+ * Derlemek için: npm run css   (geliştirirken: npm run css:watch)
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', 'Poppins', sans-serif;
+  }
+
+  [hidden] { display: none !important; }
+}
+
+@layer components {
+  /* Erişilebilirlik: klavye ile "içeriğe geç" bağlantısı */
+  .skip-link {
+    @apply absolute left-4 -top-20 z-[200] bg-champagne text-black px-4 py-2 text-sm;
+  }
+  .skip-link:focus { @apply top-4; }
+
+  /* Hero arka plan nokta deseni */
+  .dot-pattern {
+    background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0);
+    background-size: 50px 50px;
+  }
+
+  /* --- Header --- */
+  .site-header { animation: header-in .8s cubic-bezier(.25,.1,.25,1) both; }
+  .site-header.is-scrolled {
+    @apply bg-black/95 backdrop-blur-md border-white/10;
+  }
+  .nav-underline { animation: underline-in .3s ease-out both; transform-origin: left; }
+
+  .menu-icon { @apply block transition-transform duration-300; }
+  .menu-icon--close { @apply hidden; }
+  .menu-open .menu-icon--open { @apply hidden; }
+  .menu-open .menu-icon--close { @apply block rotate-90; }
+
+  .mobile-overlay,
+  .mobile-panel {
+    @apply invisible opacity-0 transition-all duration-300;
+  }
+  .mobile-panel { transform: translateY(-20px); }
+  .menu-open .mobile-overlay,
+  .menu-open .mobile-panel { @apply visible opacity-100; }
+  .menu-open .mobile-panel { transform: none; }
+  .mobile-panel li { opacity: 0; transform: translateX(-20px); transition: opacity .3s, transform .3s; }
+  .menu-open .mobile-panel li {
+    opacity: 1; transform: none;
+    transition-delay: calc(var(--i, 0) * .1s);
+  }
+
+  /* --- Logo --- */
+  .logo-anim { animation: logo-in .6s ease-out both; }
+
+  /* --- Belirme animasyonu (framer-motion fadeInUp karşılığı) --- */
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity .8s cubic-bezier(.25,.1,.25,1), transform .8s cubic-bezier(.25,.1,.25,1);
+    transition-delay: var(--reveal-delay, 0s);
+  }
+  .js [data-reveal].is-visible { opacity: 1; transform: none; }
+  /* Animasyon bitince JS data-reveal'ı kaldırır; öğe kendi hover geçişlerine döner. */
+
+  /* Galeri kartları vb. küçük büyüme efekti (whileHover scale 1.02) */
+  .hover-lift.hover-lift { transition: transform .3s ease, border-color .5s ease; }
+  .hover-lift:not([data-reveal]):hover { transform: scale(1.02); }
+
+  /* Galeri masonry yerleşimi (auto-rows 10px üzerinde satır sayısı) */
+  .g-tall   { grid-row: span 12 / span 12; }
+  .g-wide   { grid-row: span 8 / span 8; }
+  .g-square { grid-row: span 10 / span 10; }
+
+  /* Hero ışık efektleri */
+  .glow--a { animation: glow-a 8s ease-in-out infinite; }
+  .glow--b { animation: glow-b 10s ease-in-out infinite; }
+  .scroll-hint > div { animation: scroll-hint 2s ease-in-out infinite; }
+
+  /* Ana CTA butonu */
+  .btn-fill > span:first-child { transition: color .5s; }
+
+  /* --- Popup --- */
+  .popup .popup-backdrop { animation: fade-in .3s ease-out both; }
+  .popup .popup-card { animation: pop-in .45s cubic-bezier(.2,.9,.3,1.1) both; }
+  .popup.is-closing .popup-backdrop { animation: fade-out .25s ease-in both; }
+  .popup.is-closing .popup-card { animation: pop-out .25s ease-in both; }
+
+  /* --- Lightbox --- */
+  .lightbox { animation: fade-in .3s ease-out both; }
+  .lightbox .lightbox-inner { animation: zoom-in .3s ease-out both; }
+}
+
+@keyframes header-in { from { transform: translateY(-100px); } to { transform: none; } }
+@keyframes underline-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes logo-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes glow-a {
+  0%, 100% { transform: scale(1); opacity: .3; }
+  50% { transform: scale(1.2); opacity: .5; }
+}
+@keyframes glow-b {
+  0%, 100% { transform: scale(1.2); opacity: .2; }
+  50% { transform: scale(1); opacity: .4; }
+}
+@keyframes scroll-hint { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(20px) scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes pop-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(20px) scale(.9); } }
+@keyframes zoom-in { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0s !important;
+  }
+  .js [data-reveal] { opacity: 1; transform: none; }
+}

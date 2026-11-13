@@ -1,0 +1,92 @@
+# MATMAZEL İzmit — Apache / LiteSpeed (Hostinger) yapılandırması
+
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+AddDefaultCharset UTF-8
+ErrorDocument 404 /404.php
+ErrorDocument 403 /404.php
+
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+  AddType application/manifest+json .webmanifest
+  AddCharset UTF-8 .css .js .xml .txt .webmanifest
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Dahili yönlendirmelerde (temiz URL -> .php, hata sayfaları) kuralları tekrar çalıştırma
+  RewriteCond %{ENV:REDIRECT_STATUS} .
+  RewriteRule ^ - [L]
+
+  # --- Kanonik alan adı: https + www'suz (https://matmazelizmit.com) ---
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # --- Geliştirme dosyalarını dışarı kapat ---
+  RewriteRule ^(includes|resources|node_modules|\.git)(/|$) - [F,L]
+  RewriteRule ^(package(-lock)?\.json|tailwind\.config\.js|postcss\.config\.js|router\.php|README\.md|\.gitignore)$ - [F,L]
+
+  # --- Eski adresler (React sürümü) -> yeni adresler ---
+  RewriteRule ^sitemap\s2\.xml$ /sitemap.xml [R=301,L]
+  RewriteCond %{THE_REQUEST} \s/+index\.(php|html?)[\s?] [NC]
+  RewriteRule ^ / [R=301,L]
+
+  # --- Site haritasının tek adresi /sitemap.xml ---
+  RewriteCond %{THE_REQUEST} \s/+sitemap\.php[\s?] [NC]
+  RewriteRule ^ /sitemap.xml [R=301,L]
+
+  # --- .php uzantılı istekleri temiz adrese yönlendir (/hizmetler.php -> /hizmetler) ---
+  RewriteCond %{THE_REQUEST} \s/+([a-z0-9-]+)\.php[\s?] [NC]
+  RewriteRule ^ /%1 [R=301,L]
+
+  # --- Sondaki eğik çizgiyi kaldır (/galeri/ -> /galeri) ---
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+  # --- Dinamik site haritası ---
+  RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+  # --- Temiz adres -> PHP dosyası ---
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}.php -f
+  RewriteRule ^([a-z0-9-]+)$ $1.php [L]
+</IfModule>
+
+# --- Sıkıştırma ---
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/xml application/javascript application/json application/ld+json application/manifest+json image/svg+xml image/x-icon
+</IfModule>
+
+# --- Tarayıcı önbelleği (CSS/JS dosyaları ?v= ile sürümlenir) ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 month"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/xml "access plus 1 hour"
+  ExpiresByType text/xml "access plus 1 hour"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  <FilesMatch "\.(webp|jpe?g|png|ico|css|js)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>

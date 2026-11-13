@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /includes/
+Disallow: /resources/
+
+Sitemap: https://matmazelizmit.com/sitemap.xml
